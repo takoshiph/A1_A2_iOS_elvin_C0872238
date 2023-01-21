@@ -16,6 +16,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     var locationManager = CLLocationManager()
     var allowedAnnotations = 0
     var distanceLabel: [UILabel] = []
+    var cities:[Annotation] = [Annotation]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,7 +35,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         //defined the gestures to be used
         let uitgr = UITapGestureRecognizer(target: self, action: #selector(addAnnotation))
         let uilpgr = UILongPressGestureRecognizer(target: self, action: #selector(removeAnnotation))
-     
+        uitgr.numberOfTapsRequired = 1
+
         //add the gestures to mapView
         mapView.addGestureRecognizer(uitgr)
         mapView.addGestureRecognizer(uilpgr)
@@ -61,39 +63,53 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         mapView.setRegion(region, animated: true)
     }
     
-    //MARK: add one tap Annotation
-    @objc func addAnnotation(gestureRecognizer: UIGestureRecognizer) {
+    @objc func addAnnotation(sender: UITapGestureRecognizer) {
         
-        allowedAnnotations = mapView.annotations.count
+        let touchpoint = sender.location(in: mapView)
+        let coordinate = mapView.convert(touchpoint, toCoordinateFrom: mapView)
+        var cityMarker: String = ""
+        allowedAnnotations = cities.count
         
-        let touchPoint = gestureRecognizer.location(in: mapView)
-        let coordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
-                       
+        if allowedAnnotations > 1 {
+            showRoute.isHidden = false
+        }
+        switch self.allowedAnnotations{
+        case 0:
+            cityMarker = "A"
+        case 1:
+            cityMarker = "B"
+        case 2:
+            cityMarker = "C"
+        default:
+            cityMarker = "A"
+
+        }
         CLGeocoder().reverseGeocodeLocation(CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude), completionHandler: {(placemarks, error) in
             
             if error != nil {
                 print(error!)
             } else {
                 DispatchQueue.main.async {
-                    if (placemarks?[0]) != nil {
-                            if self.allowedAnnotations <= 3 {
-                                switch self.allowedAnnotations{
-                                case 0:
-                                    let title = Annotation(title: "My Location", coordinate: coordinate)
-                                    self.mapView.addAnnotation(title)
-                                case 1:
-                                    let title = Annotation(title: "A", coordinate: coordinate)
-                                    self.mapView.addAnnotation(title)
-                                case 2:
-                                    let title = Annotation(title: "B", coordinate: coordinate)
-                                    self.mapView.addAnnotation(title)
-                                case 3:
-                                    let title = Annotation(title: "C", coordinate: coordinate)
-                                    self.mapView.addAnnotation(title)
-                                default:
-                                    return
+                    if let placeMark = placemarks?[0] {
+                        
+                        if placeMark.locality != nil {
+                            let place = Annotation(title: cityMarker, subtitle: "", coordinate: coordinate)
+                            
+                            // Add up to 3 Annotations on the map
+                            if self.allowedAnnotations <= 2 {
+                                self.cities.append(place)
+                                self.mapView.addAnnotation(place)
                             }
-                            if self.allowedAnnotations == 3 {
+                            else {
+                                self.removeOverlays()
+                                self.mapView.removeAnnotations(self.mapView.annotations )
+                                self.cities = []
+                                self.distanceLabel = []
+                                self.cities.append(place)
+                                self.mapView.addAnnotation(place)
+                            }
+
+                            if self.allowedAnnotations == 2 {
                                 self.addPolyline()
                                 self.addPolygon()
                             }
@@ -102,7 +118,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                 }
             }
         })
-      
     }
     
     //MARK: add Long Press to Remove Annotation
@@ -146,29 +161,54 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         distanceLabel = []
     }
     
-    //MARK: Add Polyline to placemark
     func addPolyline() {
-        showRoute.isHidden = false
-        var annotations: [CLLocationCoordinate2D] = [CLLocationCoordinate2D]()
-        for mapAnnotation in mapView.annotations[1...3] {
-            annotations.append(mapAnnotation.coordinate)
-        }
-        
-        let polyline = MKPolyline(coordinates: annotations, count: annotations.count)
+        let coordinates = cities.map {$0.coordinate}
+        let polyline = MKPolyline(coordinates: coordinates, count: coordinates.count)
         mapView.addOverlay(polyline, level: .aboveRoads)
-        displayDistance()
+        
+        showDistanceBetweenTwoPoint()
     }
     
     func addPolygon() {
-        var annotations: [CLLocationCoordinate2D] = [CLLocationCoordinate2D]()
-        for location in mapView.annotations{
-            if location.title == "My Location" {
-                continue
-            }
-            annotations.append(location.coordinate)
-        }
-        let polygon = MKPolygon(coordinates: annotations, count: annotations.count)
+        let coordinates = cities.map {$0.coordinate}
+        let polygon = MKPolygon(coordinates: coordinates, count: coordinates.count)
         mapView.addOverlay(polygon)
+    }
+    private func showDistanceBetweenTwoPoint() {
+        var nextIndex = 0
+        
+        for index in 0...2{
+            if index == 2 {
+                nextIndex = 0
+            } else {
+                nextIndex = index + 1
+            }
+
+            let distance: Double = getDistance(from: cities[index].coordinate, to:  cities[nextIndex].coordinate)
+            
+            let pointA: CGPoint = mapView.convert(cities[index].coordinate, toPointTo: mapView)
+            let pointB: CGPoint = mapView.convert(cities[nextIndex].coordinate, toPointTo: mapView)
+        
+            let labelDistance = UILabel(frame: CGRect(x: 0, y: 0, width: 50, height: 18))
+
+            labelDistance.textAlignment = NSTextAlignment.center
+            labelDistance.text = "\(String.init(format: "%2.f",  round(distance * 0.001)))km"
+            labelDistance.textColor = .black
+            labelDistance.font = UIFont(name: "Thonburi-Bold", size: 10.0)
+            labelDistance.center = CGPoint(x: (pointA.x + pointB.x) / 2, y: (pointA.y + pointB.y) / 2)
+            
+            distanceLabel.append(labelDistance)
+        }
+        for label in distanceLabel {
+            mapView.addSubview(label)
+        }
+    }
+    
+    func getDistance(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> CLLocationDistance {
+        let from = CLLocation(latitude: from.latitude, longitude: from.longitude)
+        let to = CLLocation(latitude: to.latitude, longitude: to.longitude)
+        
+        return from.distance(from: to)
     }
     
     private func displayDistance() {
@@ -209,9 +249,9 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         mapView.removeOverlays(mapView.overlays)
         removeDistanceLabel()
 
-        var nextIndex = 1
-        for index in 1...3 {
-            if index == 3 {
+        var nextIndex = 0
+        for index in 0...2 {
+            if index == 2 {
                 nextIndex = 1
             } else {
                 nextIndex = index + 1
