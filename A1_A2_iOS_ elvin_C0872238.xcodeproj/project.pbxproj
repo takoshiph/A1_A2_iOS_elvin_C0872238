@@ -13,6 +13,7 @@
 		72583FE0297B49D80081BD8E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 72583FDE297B49D80081BD8E /* Main.storyboard */; };
 		72583FE2297B49D90081BD8E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72583FE1297B49D90081BD8E /* Assets.xcassets */; };
 		72583FE5297B49D90081BD8E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 72583FE3297B49D90081BD8E /* LaunchScreen.storyboard */; };
+		72583FED297B4F400081BD8E /* Annotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72583FEC297B4F400081BD8E /* Annotation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		72583FE1297B49D90081BD8E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		72583FE4297B49D90081BD8E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		72583FE6297B49D90081BD8E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		72583FEC297B4F400081BD8E /* Annotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Annotation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +61,7 @@
 				72583FD8297B49D80081BD8E /* AppDelegate.swift */,
 				72583FDA297B49D80081BD8E /* SceneDelegate.swift */,
 				72583FDC297B49D80081BD8E /* ViewController.swift */,
+				72583FEC297B4F400081BD8E /* Annotation.swift */,
 				72583FDE297B49D80081BD8E /* Main.storyboard */,
 				72583FE1297B49D90081BD8E /* Assets.xcassets */,
 				72583FE3297B49D90081BD8E /* LaunchScreen.storyboard */,
@@ -141,6 +144,7 @@
 				72583FDD297B49D80081BD8E /* ViewController.swift in Sources */,
 				72583FD9297B49D80081BD8E /* AppDelegate.swift in Sources */,
 				72583FDB297B49D80081BD8E /* SceneDelegate.swift in Sources */,
+				72583FED297B4F400081BD8E /* Annotation.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
