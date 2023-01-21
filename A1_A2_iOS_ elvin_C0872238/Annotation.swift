@@ -8,8 +8,7 @@
 import Foundation
 import MapKit
 
-
-class LocalityAnnotation: NSObject, MKAnnotation {
+class Annotation: NSObject, MKAnnotation {
     var title: String?
     var subtitle: String?
     var coordinate: CLLocationCoordinate2D
